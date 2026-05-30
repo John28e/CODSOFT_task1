@@ -1,16 +1,28 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { CartContext } from '../context/CartContext';
 
 const Shop = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { addToCart } = useContext(CartContext);
+  
+  // Extract initial category from URL
+  const queryParams = new URLSearchParams(location.search);
+  const initialCategory = queryParams.get('category') || 'All';
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
 
-  const { addToCart } = useContext(CartContext);
-  const navigate = useNavigate();
+  // Sync category state when URL changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('category') || 'All';
+    setActiveCategory(cat);
+  }, [location.search]);
 
   const categories = ['All', 'Tops', 'Bottoms', 'Dresses', 'Accessories'];
 
