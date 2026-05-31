@@ -83,3 +83,32 @@ export const loginUser = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Make user admin (temporary for development setup)
+// @route   GET /api/auth/makeadmin/:email
+// @access  Public
+export const makeAdmin = async (req, res, next) => {
+  try {
+    const { email } = req.params;
+    const user = await User.findOneAndUpdate(
+      { email },
+      { isAdmin: true },
+      { new: true }
+    );
+
+    if (!user) {
+      res.status(404);
+      throw new Error('User not found');
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

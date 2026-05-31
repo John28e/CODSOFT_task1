@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
+import { AuthProvider, AuthContext } from './context/AuthContext';
+import { CartProvider, CartContext } from './context/CartContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
@@ -16,26 +16,54 @@ import Admin from './pages/Admin';
 
 import './App.css';
 
+// Separate Navbar component to consume Contexts
+const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
+  const { cart } = useContext(CartContext);
+
+  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
+
+  return (
+    <nav className="navbar">
+      <div className="nav-logo">
+        <Link to="/">Fashion Store</Link>
+      </div>
+      <ul className="nav-links">
+        <li><Link to="/">Home</Link></li>
+        <li><Link to="/shop">Shop</Link></li>
+        <li>
+          <Link to="/cart" className="cart-link-wrapper">
+            Cart
+            {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+          </Link>
+        </li>
+        {user ? (
+          <>
+            {user.isAdmin && <li><Link to="/admin">Admin</Link></li>}
+            <li className="user-greeting-wrapper" style={{ display: 'flex', alignItems: 'center' }}>
+              <span className="user-greeting">Hello, {user.name}</span>
+              <button onClick={logout} className="logout-btn">Logout</button>
+            </li>
+          </>
+        ) : (
+          <>
+            <li><Link to="/login">Login</Link></li>
+            <li><Link to="/register">Register</Link></li>
+          </>
+        )}
+      </ul>
+    </nav>
+  );
+};
+
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <Router>
           <div className="app-container">
-            {/* Simple Premium Navbar */}
-            <nav className="navbar">
-              <div className="nav-logo">
-                <Link to="/">Fashion Store</Link>
-              </div>
-              <ul className="nav-links">
-                <li><Link to="/">Home</Link></li>
-                <li><Link to="/shop">Shop</Link></li>
-                <li><Link to="/cart">Cart</Link></li>
-                <li><Link to="/login">Login</Link></li>
-                <li><Link to="/register">Register</Link></li>
-                <li><Link to="/admin">Admin</Link></li>
-              </ul>
-            </nav>
+            {/* Mounted Navbar component inside Router */}
+            <Navbar />
 
             {/* Application Main Routes */}
             <main className="main-content">
